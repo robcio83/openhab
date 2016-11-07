@@ -1,0 +1,34 @@
+Group g_home_alarm_clock
+Group g_mobiles
+Group g_robert_mobiles
+Group g_maria_mobiles
+
+String home_alarm_clock_time "%s"
+Number home_alarm_clock_hour		"Hour [%d]"		<clock>		(g_home_alarm_clock)
+Number home_alarm_clock_minute		"Minute [%d]"	<clock>		(g_home_alarm_clock)
+
+Switch	home_alarm_clock_monday		"Monday"		<switch>	(g_home_alarm_clock)
+Switch	home_alarm_clock_tuesday	"Tuesday"		<switch>	(g_home_alarm_clock)
+Switch	home_alarm_clock_wednesday	"Wednesday"		<switch>	(g_home_alarm_clock)
+Switch	home_alarm_clock_thursday	"Thursday"		<switch>	(g_home_alarm_clock)
+Switch	home_alarm_clock_friday		"Friday"		<switch>	(g_home_alarm_clock)
+Switch	home_alarm_clock_saturday	"Saturday"		<switch>	(g_home_alarm_clock)
+Switch	home_alarm_clock_sunday		"Sunday"		<switch>	(g_home_alarm_clock)
+
+Switch home_delayed_init "delayed switch"
+
+Number	home_radio_station	"Radio"	<network>
+Dimmer	home_radio_volume	"Volume [%.1f %%]"
+
+Switch robert_phone_presence
+Switch robert_samsung_phone (g_mobiles, g_robert_mobiles) {nh="192.168.1.120"}
+Switch robert_kazam_phone (g_mobiles, g_robert_mobiles) {nh="192.168.1.121"}
+Switch robert_samsung_phone1 (g_mobiles, g_robert_mobiles) {nh="192.168.1.113"}
+Switch robert_kazam_phone1 (g_mobiles, g_robert_mobiles) {nh="192.168.1.100"}
+
+Switch maria_phone_presence
+Switch maria_samsung_phone (g_mobiles, g_maria_mobiles) {nh="192.168.1.122"}
+Switch maria_lg_phone (g_mobiles, g_maria_mobiles) {nh="192.168.1.123"}
+Switch maria_samsung_phone1 (g_mobiles, g_maria_mobiles) {nh="192.168.1.108"}
+
+Switch test_switch "Test1" <switch>

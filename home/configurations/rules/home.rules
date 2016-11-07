@@ -1,0 +1,234 @@
+import org.openhab.core.library.types.*
+import org.openhab.core.persistence.*
+import org.openhab.model.script.actions.*
+import org.openhab.action.squeezebox.*
+import java.util.concurrent.locks.ReentrantLock
+
+var Timer home_alarm_clock_start_timer = null
+var Timer home_alarm_clock_stop_timer = null
+var java.util.concurrent.locks.ReentrantLock lock = new java.util.concurrent.locks.ReentrantLock()
+  
+rule "initialization"
+ when 
+   System started
+ then
+     createTimer(now.plusSeconds(30))[ | 
+		home_delayed_init.postUpdate(OFF)
+		home_delayed_init.postUpdate(ON)
+	]
+ end
+
+rule "delayed initialization" 
+when
+	Item home_delayed_init received update ON
+then
+	if(home_alarm_clock_hour.state==Uninitialized || home_alarm_clock_minute.state==Uninitialized) {
+		
+		postUpdate(home_alarm_clock_hour,6)
+		postUpdate(home_alarm_clock_minute,15)
+	}
+	
+	if(home_alarm_clock_monday.state==Uninitialized) {
+		postUpdate(home_alarm_clock_monday,ON)
+	}
+	if(home_alarm_clock_tuesday.state==Uninitialized) {
+		postUpdate(home_alarm_clock_tuesday,ON)
+	}
+	if(home_alarm_clock_wednesday.state==Uninitialized) {
+		postUpdate(home_alarm_clock_wednesday,ON)
+	}
+	if(home_alarm_clock_thursday.state==Uninitialized) {
+		postUpdate(home_alarm_clock_thursday,ON)
+	}
+	if(home_alarm_clock_friday.state==Uninitialized) {
+		postUpdate(home_alarm_clock_friday,ON)
+	}
+	if(home_alarm_clock_saturday.state==Uninitialized) {
+		postUpdate(home_alarm_clock_saturday,OFF)
+	}
+	if(home_alarm_clock_sunday.state==Uninitialized) {
+		postUpdate(home_alarm_clock_sunday,OFF)
+	}
+	
+end
+
+rule "Alarm clock setup"
+when
+	Item home_alarm_clock_hour changed or
+	Item home_alarm_clock_minute changed
+then
+	try{
+	lock.lock()
+	var hour = home_alarm_clock_hour.state as DecimalType
+    var minute = home_alarm_clock_minute.state as DecimalType
+	
+	var String time = ""
+	var String hour_prefix = ""
+	var String minute_prefix = ""
+	if(hour < 10) {
+		hour_prefix = "0"
+	}
+	if(minute < 10) {
+		minute_prefix = "0"
+	}
+	
+	time = hour_prefix + home_alarm_clock_hour.state.format("%d") + 	":" + minute_prefix + home_alarm_clock_minute.state.format("%d")
+	postUpdate(home_alarm_clock_time,time)
+	
+	var int alarm_clock_time_in_minutes = hour.intValue * 60 + minute.intValue
+    alarm_clock_time_in_minutes = alarm_clock_time_in_minutes.intValue
+
+    // calculate current time [min]
+    var int now_in_minutes = now.getMinuteOfDay
+    now_in_minutes = now_in_minutes.intValue
+	
+	var int delta = (alarm_clock_time_in_minutes - now_in_minutes)
+    delta = delta.intValue
+	
+	// add one day (1440 minutes) if alarm time for today already passed
+    if (now_in_minutes > alarm_clock_time_in_minutes) { delta = delta + 1440 }
+
+    // check if there is already an alarm timer; cancel it if present
+    if (home_alarm_clock_start_timer != null) {
+       home_alarm_clock_start_timer.cancel
+       home_alarm_clock_start_timer = null
+    }
+
+    // create a new timer using the calculated delta [min]
+    home_alarm_clock_start_timer = createTimer(now.plusMinutes(delta)) [|
+        
+		var Number day = now.getDayOfWeek
+        if (
+			((day == 1) && (home_alarm_clock_monday.state	== ON)) ||
+            ((day == 2) && (home_alarm_clock_tuesday.state	== ON)) ||
+            ((day == 3) && (home_alarm_clock_wednesday.state== ON)) ||
+            ((day == 4) && (home_alarm_clock_thursday.state	== ON)) ||
+            ((day == 5) && (home_alarm_clock_friday.state	== ON)) ||
+            ((day == 6) && (home_alarm_clock_saturday.state	== ON)) ||
+            ((day == 7) && (home_alarm_clock_sunday.state	== ON))
+			)
+		{
+            //playStream("http://bbcwssc.ic.llnwd.net/stream/bbcwssc_mp1_ws-einws")
+			postUpdate(home_radio_station,2)
+			if(home_alarm_clock_stop_timer != null) {
+				home_alarm_clock_stop_timer.cancel
+			}
+			home_alarm_clock_stop_timer = createTimer(now.plusMinutes(delta+2)) [|
+				//playStream(null)
+				postUpdate(home_radio_station,0)
+			]
+		}
+		// Re-Arm the timer to trigger again tomorrow (same time) 
+		home_alarm_clock_start_timer.reschedule(now.plusHours(24))
+        // ************************************************
+        // Here the code ends that executes once the timer triggers 
+        ]
+  } finally  {
+     // release the lock - we are ready to process the next event
+     lock.unlock()
+  }
+end
+
+/**
+ * This rule demonstrates how a NumberItem can be used to easily control the local sound system.
+ * A selection widget in the UI provides easy access for this
+ */
+rule "Select radio station"
+	when
+		Item home_radio_station received command
+	then
+		switch(receivedCommand) {
+			case 0 : playStream(null)
+			case 1 : playStream("http://bbcwssc.ic.llnwd.net/stream/bbcwssc_mp1_ws-einws")
+			case 2 : playStream("http://metafiles.gl-systemhaus.de/hr/hr3_2.m3u")
+			case 3 : playStream("http://mp3-live.swr3.de/swr3_m.m3u")
+			case 4 : playStream("http://edge.live.mp3.mdn.newmedia.nacamar.net/radioffh/livestream.mp3.m3u")
+			case 5 : playStream("http://stream3.polskieradio.pl:8904")
+			case 6 : playStream("http://bh2.pl:9938")
+			case 7 : playStream("http://radiointernetowe.net:9936")
+			case 8 : playStream("http://stream4.nadaje.com:11846/")
+			case 9 : playStream("http://51.254.35.19:8035")
+			case 10: playStream("http://37.59.2.218:8001/jard2")
+		}
+	end
+
+rule "Update radio station"
+	when
+		Item home_radio_station received update
+	then
+		var station_number = home_radio_station.state as DecimalType
+		switch(station_number) {
+			case 0 : playStream(null)
+			case 1 : playStream("http://bbcwssc.ic.llnwd.net/stream/bbcwssc_mp1_ws-einws")
+			case 2 : playStream("http://metafiles.gl-systemhaus.de/hr/hr3_2.m3u")
+			case 3 : playStream("http://mp3-live.swr3.de/swr3_m.m3u")
+			case 4 : playStream("http://edge.live.mp3.mdn.newmedia.nacamar.net/radioffh/livestream.mp3.m3u")
+		}
+	end
+
+rule "check robert presence"
+	when 
+		Item g_robert_mobiles changed
+	then
+		logInfo(">>>from check robert presence rule<<<", "g_robert_mobiles changed")
+		if(robert_phone_presence.state != ON){
+				var boolean is_robert_present = 0 < g_robert_mobiles.members.filter(s | s.state == ON).size
+				if(is_robert_present){
+					logInfo(">>>from check robert presence rule<<<", "Robert arrived at home")
+                    sendCommand(robert_phone_presence, ON)
+					//sendNotification("robert.andrzejczyk@gmail.com", "Bye...")
+				}
+		}
+	end
+
+rule "check robert periodic presence"
+	when 
+		Time cron "0 */1 * * * ?"
+	then
+		logInfo(">>>from check robert periodic presence rule<<<", "time cron")
+		if(robert_phone_presence.state == ON){
+				var boolean is_robert_present = 0 < g_robert_mobiles.members.filter(s | s.state == ON).size
+				if(!is_robert_present){
+					logInfo(">>>from check robert periodic presence rule<<<", "Robert is not at home")
+					var boolean is_robert_absent_for_2_min = g_robert_mobiles.members.filter(s | s.changedSince(now.minusMinutes(2))).size == 0
+					if(is_robert_absent_for_2_min){
+						logInfo(">>>from check robert periodic presence rule<<<", "Robert is not at home at least for 2 mins")
+						sendCommand(robert_phone_presence, OFF)
+					}
+				}
+		}
+	end
+	
+rule "check maria presence"
+	when 
+		Item g_maria_mobiles changed
+	then
+		logInfo(">>>from check maria presence rule<<<", "g_maria_mobiles changed")
+		if(maria_phone_presence.state != ON){
+				var boolean is_maria_present = 0 < g_maria_mobiles.members.filter(s | s.state == ON).size
+				if(is_maria_present){
+					logInfo(">>>from check maria presence rule<<<", "maria arrived at home")
+                    sendCommand(maria_phone_presence, ON)
+					sendNotification("robert.andrzejczyk@gmail.com", "Maria arrived at the home")
+				}
+		}
+	end
+
+rule "check maria periodic presence"
+	when 
+		Time cron "0 */1 * * * ?"
+	then
+		logInfo(">>>from check maria periodic presence rule<<<", "time cron")
+		if(maria_phone_presence.state == ON){
+				var boolean is_maria_present = 0 < g_maria_mobiles.members.filter(s | s.state == ON).size
+				if(!is_maria_present){
+					logInfo(">>>from check maria periodic presence rule<<<", "maria is not at home")
+					var boolean is_maria_absent_for_2_min = g_maria_mobiles.members.filter(s | s.changedSince(now.minusMinutes(2))).size == 0
+					if(is_maria_absent_for_2_min){
+						logInfo(">>>from check maria periodic presence rule<<<", "maria is not at home at least for 2 mins")
+						sendCommand(maria_phone_presence, OFF)
+						sendNotification("robert.andrzejczyk@gmail.com", "Maria leaved the home")
+					}
+				}
+		}
+	end	
