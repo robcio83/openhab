@@ -1,0 +1,41 @@
+sitemap home label="Zielonogórska"
+{
+	Frame label="Test" {
+		Switch item=test_switch
+	}
+	
+	Frame label="System" {
+
+		Text label="Alarm clock time [%s]" item=home_alarm_clock_time icon="clock" {
+			Frame label="Setup alarm clock" {
+				Setpoint item=home_alarm_clock_hour minValue=0 maxValue=23 step=1
+				Setpoint item=home_alarm_clock_minute minValue=0 maxValue=59 step=1
+			}
+			Frame label="Alarm clock weekdays" {
+				Switch item=home_alarm_clock_monday
+				Switch item=home_alarm_clock_tuesday
+				Switch item=home_alarm_clock_wednesday
+				Switch item=home_alarm_clock_thursday
+				Switch item=home_alarm_clock_friday
+				Switch item=home_alarm_clock_saturday
+				Switch item=home_alarm_clock_sunday
+			}
+		}
+	}
+	
+	Frame label="Radio Control" {
+		Selection item=home_radio_station mappings=[0=off, 1=BBC, 2=HR, 3=SWR3, 4=FFH, 5=Trojka, 6=Bstok1, 7=Bstok2, 8=Akadera, 9=Radio5, 10=jard2]
+		Slider item=home_radio_volume
+	}
+	
+	Frame label="Robert presence" {
+		Switch label="Robert present" item=robert_phone_presence
+		Switch label="Sony Wifi" item=robert_phone1
+		Switch label="Samsung Wifi" item=robert_phone2
+	}
+	
+	Frame label="Bartek presence" {
+		Switch label="Bartek present" item=maria_phone_presence
+		Switch label="Samsung Wifi" item=maria_phone1
+	}
+}
