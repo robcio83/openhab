@@ -175,8 +175,8 @@ rule "check robert presence"
 				var boolean is_robert_present = 0 < g_robert_mobiles.members.filter(s | s.state == ON).size
 				if(is_robert_present){
 					logInfo(">>>from check robert presence rule<<<", "Robert arrived at home")
-                    sendCommand(robert_phone_presence, ON)
-					//sendNotification("robert.andrzejczyk@gmail.com", "Bye...")
+                    			sendCommand(robert_phone_presence, ON)
+					sendNotification("robert.andrzejczyk@gmail.com", "Bye...")
 				}
 		}
 	end
@@ -190,10 +190,11 @@ rule "check robert periodic presence"
 				var boolean is_robert_present = 0 < g_robert_mobiles.members.filter(s | s.state == ON).size
 				if(!is_robert_present){
 					logInfo(">>>from check robert periodic presence rule<<<", "Robert is not at home")
-					var boolean is_robert_absent_for_2_min = g_robert_mobiles.members.filter(s | s.changedSince(now.minusMinutes(2))).size == 0
-					if(is_robert_absent_for_2_min){
-						logInfo(">>>from check robert periodic presence rule<<<", "Robert is not at home at least for 2 mins")
+					var boolean is_robert_absent_for_4_min = g_robert_mobiles.members.filter(s | s.changedSince(now.minusMinutes(4))).size == 0
+					if(is_robert_absent_for_4_min){
+						logInfo(">>>from check robert periodic presence rule<<<", "Robert is not at home at least for 4 mins")
 						sendCommand(robert_phone_presence, OFF)
+						sendNotification("robert.andrzejczyk@gmail.com", "Hello...")	
 					}
 				}
 		}
@@ -208,8 +209,8 @@ rule "check maria presence"
 				var boolean is_maria_present = 0 < g_maria_mobiles.members.filter(s | s.state == ON).size
 				if(is_maria_present){
 					logInfo(">>>from check maria presence rule<<<", "maria arrived at home")
-                    sendCommand(maria_phone_presence, ON)
-					sendNotification("robert.andrzejczyk@gmail.com", "Maria arrived at the home")
+                    			sendCommand(maria_phone_presence, ON)
+				//	sendNotification("robert.andrzejczyk@gmail.com", "Bartek arrived at the home")
 				}
 		}
 	end
@@ -223,11 +224,11 @@ rule "check maria periodic presence"
 				var boolean is_maria_present = 0 < g_maria_mobiles.members.filter(s | s.state == ON).size
 				if(!is_maria_present){
 					logInfo(">>>from check maria periodic presence rule<<<", "maria is not at home")
-					var boolean is_maria_absent_for_2_min = g_maria_mobiles.members.filter(s | s.changedSince(now.minusMinutes(2))).size == 0
-					if(is_maria_absent_for_2_min){
-						logInfo(">>>from check maria periodic presence rule<<<", "maria is not at home at least for 2 mins")
+					var boolean is_maria_absent_for_4_min = g_maria_mobiles.members.filter(s | s.changedSince(now.minusMinutes(4))).size == 0
+					if(is_maria_absent_for_4_min){
+						logInfo(">>>from check maria periodic presence rule<<<", "Bartek is not at home")
 						sendCommand(maria_phone_presence, OFF)
-						sendNotification("robert.andrzejczyk@gmail.com", "Maria leaved the home")
+					//	sendNotification("robert.andrzejczyk@gmail.com", "Bartek leaved the home")
 					}
 				}
 		}

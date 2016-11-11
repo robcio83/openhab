@@ -1,0 +1,13 @@
+*.TXT
+*.bat
+*.sh
+addons
+contexts
+demo
+etc
+logs
+server
+sounds
+webapps
+workspace
+

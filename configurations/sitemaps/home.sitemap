@@ -30,16 +30,12 @@ sitemap home label="Zielonogórska"
 	
 	Frame label="Robert presence" {
 		Switch label="Robert present" item=robert_phone_presence
-		Switch label="Samsung Wifi" item=robert_samsung_phone
-		Switch label="Kazam Wifi" item=robert_kazam_phone
-		Switch label="Samsung Wifi1" item=robert_samsung_phone1
-		Switch label="Kazam Wifi1" item=robert_kazam_phone1
+		Switch label="Sony Wifi" item=robert_phone1
+		Switch label="Samsung Wifi" item=robert_phone2
 	}
 	
-	Frame label="Maria presence" {
-		Switch label="Maria present" item=maria_phone_presence
-		Switch label="Samsung Wifi" item=maria_samsung_phone
-		Switch label="LG Wifi" item=maria_lg_phone
-		Switch label="Samsung Wifi1" item=maria_samsung_phone1
+	Frame label="Bartek presence" {
+		Switch label="Bartek present" item=maria_phone_presence
+		Switch label="Samsung Wifi" item=maria_phone1
 	}
 }

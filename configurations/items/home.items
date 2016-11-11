@@ -21,14 +21,11 @@ Number	home_radio_station	"Radio"	<network>
 Dimmer	home_radio_volume	"Volume [%.1f %%]"
 
 Switch robert_phone_presence
-Switch robert_samsung_phone (g_mobiles, g_robert_mobiles) {nh="192.168.1.120"}
-Switch robert_kazam_phone (g_mobiles, g_robert_mobiles) {nh="192.168.1.121"}
-Switch robert_samsung_phone1 (g_mobiles, g_robert_mobiles) {nh="192.168.1.113"}
-Switch robert_kazam_phone1 (g_mobiles, g_robert_mobiles) {nh="192.168.1.100"}
+Switch robert_phone1 (g_mobiles, g_robert_mobiles) {nh="192.168.1.21"}
+Switch robert_phone2 (g_mobiles, g_robert_mobiles) {nh="192.168.1.22"}
 
 Switch maria_phone_presence
-Switch maria_samsung_phone (g_mobiles, g_maria_mobiles) {nh="192.168.1.122"}
-Switch maria_lg_phone (g_mobiles, g_maria_mobiles) {nh="192.168.1.123"}
-Switch maria_samsung_phone1 (g_mobiles, g_maria_mobiles) {nh="192.168.1.108"}
+Switch maria_phone1 (g_mobiles, g_maria_mobiles) {nh="192.168.1.26"}
+Switch maria_phone2 (g_mobiles, g_maria_mobiles) {nh="192.168.1.27"}
 
 Switch test_switch "Test1" <switch>
