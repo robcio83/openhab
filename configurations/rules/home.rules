@@ -7,7 +7,8 @@ import java.util.concurrent.locks.ReentrantLock
 var Timer home_alarm_clock_start_timer = null
 var Timer home_alarm_clock_stop_timer = null
 var java.util.concurrent.locks.ReentrantLock lock = new java.util.concurrent.locks.ReentrantLock()
-  
+var int user_absency_threshold_time_in_minutes = 4
+
 rule "initialization"
  when 
    System started
@@ -210,7 +211,7 @@ rule "check maria presence"
 				if(is_maria_present){
 					logInfo(">>>from check maria presence rule<<<", "maria arrived at home")
                     			sendCommand(maria_phone_presence, ON)
-				//	sendNotification("robert.andrzejczyk@gmail.com", "Bartek arrived at the home")
+					sendNotification("robert.andrzejczyk@gmail.com", "Bartek arrived at the home")
 				}
 		}
 	end
@@ -224,11 +225,12 @@ rule "check maria periodic presence"
 				var boolean is_maria_present = 0 < g_maria_mobiles.members.filter(s | s.state == ON).size
 				if(!is_maria_present){
 					logInfo(">>>from check maria periodic presence rule<<<", "maria is not at home")
-					var boolean is_maria_absent_for_4_min = g_maria_mobiles.members.filter(s | s.changedSince(now.minusMinutes(4))).size == 0
-					if(is_maria_absent_for_4_min){
+					var Date checkDatetimePoint = now.minusMinutes(user_absency_threshold_time_in_minutes)
+					var boolean is_maria_absent = g_maria_mobiles.members.filter(s | s.changedSince(checkDatetimePoint)).size == 0
+					if(is_maria_absent){
 						logInfo(">>>from check maria periodic presence rule<<<", "Bartek is not at home")
 						sendCommand(maria_phone_presence, OFF)
-					//	sendNotification("robert.andrzejczyk@gmail.com", "Bartek leaved the home")
+						sendNotification("robert.andrzejczyk@gmail.com", "Bartek leaved the home")
 					}
 				}
 		}
